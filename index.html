@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Timetable Generator</title>
+
+    <!-- PDF Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            background: #f2f2f2;
+        }
+
+        .dark {
+            background: #222;
+            color: white;
+        }
+
+        input, select, button {
+            padding: 10px;
+            margin: 5px;
+        }
+
+        button {
+            background: green;
+            color: white;
+            border: none;
+        }
+
+        table {
+            margin: auto;
+            width: 90%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        .dark table {
+            background: #333;
+            color: white;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+
+        th {
+            background: green;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>📅 Timetable Generator</h1>
+
+<input type="text" id="subject" placeholder="Subject">
+<input type="time" id="time">
+
+<select id="day">
+    <option>Monday</option>
+    <option>Tuesday</option>
+    <option>Wednesday</option>
+    <option>Thursday</option>
+    <option>Friday</option>
+</select>
+
+<br>
+
+<button onclick="addTask()">Add</button>
+<button onclick="sortByTime()">Sort Time</button>
+<button onclick="toggleDark()">Dark Mode</button>
+<button onclick="downloadPDF()">Download PDF</button>
+
+<br><br>
+
+<table id="table"></table>
+
+<script>
+let tasks = [];
+
+// Show table
+function renderTable() {
+    let table = document.getElementById("table");
+
+    table.innerHTML = `
+        <tr>
+            <th>Day</th>
+            <th>Time</th>
+            <th>Subject</th>
+            <th>Action</th>
+        </tr>
+    `;
+
+    for (let i = 0; i < tasks.length; i++) {
+        let row = table.insertRow();
+
+        row.insertCell(0).innerHTML = tasks[i].day;
+        row.insertCell(1).innerHTML = tasks[i].time;
+        row.insertCell(2).innerHTML = tasks[i].subject;
+
+        row.insertCell(3).innerHTML =
+            "<button onclick='deleteTask(" + i + ")'>Delete</button>";
+    }
+}
+
+// Add
+function addTask() {
+    let subject = document.getElementById("subject").value;
+    let time = document.getElementById("time").value;
+    let day = document.getElementById("day").value;
+
+    if (subject === "" || time === "") {
+        alert("Enter subject and time");
+        return;
+    }
+
+    tasks.push({ subject, time, day });
+
+    renderTable();
+
+    document.getElementById("subject").value = "";
+    document.getElementById("time").value = "";
+}
+
+// Delete
+function deleteTask(index) {
+    tasks.splice(index, 1);
+    renderTable();
+}
+
+// Sort
+function sortByTime() {
+    tasks.sort((a, b) => a.time.localeCompare(b.time));
+    renderTable();
+}
+
+// Dark mode
+function toggleDark() {
+    document.body.classList.toggle("dark");
+}
+
+// PDF
+function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    let doc = new jsPDF();
+
+    doc.text("Timetable", 20, 20);
+
+    let y = 30;
+
+    for (let i = 0; i < tasks.length; i++) {
+        doc.text(
+            tasks[i].day + " - " + tasks[i].time + " - " + tasks[i].subject,
+            20,
+            y
+        );
+        y += 10;
+    }
+
+    doc.save("timetable.pdf");
+}
+
+// Load empty table initially
+renderTable();
+</script>
+
+</body>
+</html>
